@@ -9,8 +9,9 @@ require (
 	github.com/lib/pq v1.10.7 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/paij0se/cligpt v1.0.6 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
-	github.com/sashabaranov/go-gpt3 v0.0.0-20221202105456-0f9f4aa343ad // indirect
+	github.com/sashabaranov/go-gpt3 v0.0.0-20230128191859-3695eb3ade92 // indirect
 	github.com/solywsh/chatgpt v0.0.13 // indirect
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/cast v1.5.0 // indirect

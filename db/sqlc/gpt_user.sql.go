@@ -12,19 +12,28 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO gpt_user (
   chat_id,
-  gpt_token
+  gpt_token,
+  step,
+  last_answer
 ) VALUES (
-  $1, $2
+  $1, $2, $3, $4
 ) RETURNING id
 `
 
 type CreateUserParams struct {
-	ChatID   string `json:"chat_id"`
-	GptToken string `json:"gpt_token"`
+	ChatID     string `json:"chat_id"`
+	GptToken   string `json:"gpt_token"`
+	Step       int16  `json:"step"`
+	LastAnswer string `json:"last_answer"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.ChatID, arg.GptToken)
+	row := q.db.QueryRowContext(ctx, createUser,
+		arg.ChatID,
+		arg.GptToken,
+		arg.Step,
+		arg.LastAnswer,
+	)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
@@ -41,7 +50,7 @@ func (q *Queries) DeleteAccount(ctx context.Context, chatID string) error {
 }
 
 const getUserForUpdate = `-- name: GetUserForUpdate :one
-SELECT id, chat_id, gpt_token, created_at FROM gpt_user
+SELECT id, chat_id, gpt_token, step, last_answer, created_at FROM gpt_user
 WHERE chat_id = $1 LIMIT 1
 FOR NO KEY UPDATE
 `
@@ -53,13 +62,15 @@ func (q *Queries) GetUserForUpdate(ctx context.Context, chatID string) (GptUser,
 		&i.ID,
 		&i.ChatID,
 		&i.GptToken,
+		&i.Step,
+		&i.LastAnswer,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUsers = `-- name: GetUsers :one
-SELECT id, chat_id, gpt_token, created_at FROM gpt_user
+SELECT id, chat_id, gpt_token, step, last_answer, created_at FROM gpt_user
 WHERE chat_id = $1 LIMIT 1
 `
 
@@ -70,13 +81,15 @@ func (q *Queries) GetUsers(ctx context.Context, chatID string) (GptUser, error) 
 		&i.ID,
 		&i.ChatID,
 		&i.GptToken,
+		&i.Step,
+		&i.LastAnswer,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, chat_id, gpt_token, created_at FROM gpt_user
+SELECT id, chat_id, gpt_token, step, last_answer, created_at FROM gpt_user
 ORDER BY id
 `
 
@@ -93,6 +106,8 @@ func (q *Queries) ListUsers(ctx context.Context) ([]GptUser, error) {
 			&i.ID,
 			&i.ChatID,
 			&i.GptToken,
+			&i.Step,
+			&i.LastAnswer,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -108,11 +123,38 @@ func (q *Queries) ListUsers(ctx context.Context) ([]GptUser, error) {
 	return items, nil
 }
 
+const updateStepAndAnswer = `-- name: UpdateStepAndAnswer :one
+UPDATE gpt_user
+SET step = $2,last_answer = $3
+WHERE chat_id = $1
+RETURNING id, chat_id, gpt_token, step, last_answer, created_at
+`
+
+type UpdateStepAndAnswerParams struct {
+	ChatID     string `json:"chat_id"`
+	Step       int16  `json:"step"`
+	LastAnswer string `json:"last_answer"`
+}
+
+func (q *Queries) UpdateStepAndAnswer(ctx context.Context, arg UpdateStepAndAnswerParams) (GptUser, error) {
+	row := q.db.QueryRowContext(ctx, updateStepAndAnswer, arg.ChatID, arg.Step, arg.LastAnswer)
+	var i GptUser
+	err := row.Scan(
+		&i.ID,
+		&i.ChatID,
+		&i.GptToken,
+		&i.Step,
+		&i.LastAnswer,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const updateUserToken = `-- name: UpdateUserToken :one
 UPDATE gpt_user
 SET gpt_token = $2
 WHERE chat_id = $1
-RETURNING id, chat_id, gpt_token, created_at
+RETURNING id, chat_id, gpt_token, step, last_answer, created_at
 `
 
 type UpdateUserTokenParams struct {
@@ -127,6 +169,8 @@ func (q *Queries) UpdateUserToken(ctx context.Context, arg UpdateUserTokenParams
 		&i.ID,
 		&i.ChatID,
 		&i.GptToken,
+		&i.Step,
+		&i.LastAnswer,
 		&i.CreatedAt,
 	)
 	return i, err

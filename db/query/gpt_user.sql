@@ -1,9 +1,11 @@
 -- name: CreateUser :one
 INSERT INTO gpt_user (
   chat_id,
-  gpt_token
+  gpt_token,
+  step,
+  last_answer
 ) VALUES (
-  $1, $2
+  $1, $2, $3, $4
 ) RETURNING id;
 
 -- name: GetUsers :one
@@ -22,6 +24,12 @@ ORDER BY id;
 -- name: UpdateUserToken :one
 UPDATE gpt_user
 SET gpt_token = $2
+WHERE chat_id = $1
+RETURNING *;
+
+-- name: UpdateStepAndAnswer :one
+UPDATE gpt_user
+SET step = $2,last_answer = $3
 WHERE chat_id = $1
 RETURNING *;
 
