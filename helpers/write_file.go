@@ -19,3 +19,17 @@ func AddToLog(log string) error {
 	}
 	return nil
 }
+
+func AddToHistory(history string) error {
+	f, err := os.OpenFile("history.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	if _, err = f.WriteString(fmt.Sprintf("%s\n", history)); err != nil {
+		panic(err)
+	}
+	return nil
+}
