@@ -72,6 +72,7 @@ func Switcher(message string, chat_id int64) (string, error) {
 		if err !=nil {
 			AddToLog(err.Error())
 		}
+		return "Bot was reseted", nil
 	} else if len(message) > 0 {
 		var answer string
 		user, err := queries.GetUsers(context.Background(), fmt.Sprintf("%d", chat_id))

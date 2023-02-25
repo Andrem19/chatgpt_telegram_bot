@@ -26,13 +26,15 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil { // If we got a message
-			answer, err := helpers.Switcher(update.Message.Text, update.Message.Chat.ID)
-			if err != nil {
-				helpers.AddToLog(err.Error())
-			}
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, answer)
-			msg.ReplyToMessageID = update.Message.MessageID
-			bot.Send(msg)
+			go func() {
+				answer, err := helpers.Switcher(update.Message.Text, update.Message.Chat.ID)
+				if err != nil {
+					helpers.AddToLog(err.Error())
+				}
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, answer)
+				msg.ReplyToMessageID = update.Message.MessageID
+				bot.Send(msg)
+			}()
 		}
 	}
 }
