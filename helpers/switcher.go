@@ -82,7 +82,7 @@ func Switcher(message string, chat_id int64) (string, error) {
 		}
 		var message2 string
 		if user.Step > 1 {
-			message2 = fmt.Sprintf("ChatGPT said: %s. Me said: %s", user.LastAnswer, message)
+			message2 = fmt.Sprintf("%s.\nNext Prompt: %s", user.LastAnswer, message)
 		} else if user.Step == 1 {
 			message2 = message
 		}
@@ -94,10 +94,11 @@ func Switcher(message string, chat_id int64) (string, error) {
 
 		if user.Step < 4 {
 			nextStep := user.Step +1
+			hist := fmt.Sprintf("%s\nPrompt %v: %s\nAnswer %v: %s", user.LastAnswer, user.Step, message, user.Step, answer)
 			param := db.UpdateStepAndAnswerParams{
 				ChatID: fmt.Sprintf("%d", chat_id),
 				Step: nextStep,
-				LastAnswer: answer,
+				LastAnswer: hist,
 			}
 			_, err := queries.UpdateStepAndAnswer(context.Background(), param)
 			if err !=nil {

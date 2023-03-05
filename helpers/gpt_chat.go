@@ -64,8 +64,9 @@ func AskQuestion(question string, gpt_token string) (string, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	url := "https://api.openai.com/v1/completions"
 
-	req, err := http.NewRequest("POST", "https://api.openai.com/v1/completions", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		fmt.Println(err, req)
 	}
